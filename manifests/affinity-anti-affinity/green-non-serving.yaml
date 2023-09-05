@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: green-non-serving
+  labels:
+     color: green
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      color: green
+  template:
+    metadata:
+      labels:
+        color: green
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: hypershift.operator.io/serving-component
+                operator: In
+                values:
+                - "true"
+            topologyKey: kubernetes.io/hostname
+      containers:
+      - name: nginx
+        image: nginx
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80

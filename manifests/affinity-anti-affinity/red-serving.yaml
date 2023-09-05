@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: red-serving
+  labels:
+    color: red
+    hypershift.operator.io/serving-component: "true"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      color: red
+      hypershift.operator.io/serving-component: "true"
+  template:
+    metadata:
+      labels:
+        color: red
+        hypershift.operator.io/serving-component: "true"
+    spec:
+      nodeSelector:
+        hypershift.operator.io/serving-component: "true"
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: hypershift.operator.io/serving-component
+                operator: In
+                values:
+                - "true"
+            topologyKey: kubernetes.io/hostname
+      containers:
+      - name: nginx
+        image: nginx
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+      priorityClassName: preempting-high-priority
