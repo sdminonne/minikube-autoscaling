@@ -1,19 +1,29 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: red-non-serving
+  name: green-non-serving
   labels:
-     color: red
+     color: green
 spec:
   replicas: 2
   selector:
     matchLabels:
-      color: red
+      color: green
   template:
     metadata:
       labels:
-        color: red
+        color: green
     spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchExpressions:
+            - key: color
+              operator: In
+              values:
+              - "green"
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
