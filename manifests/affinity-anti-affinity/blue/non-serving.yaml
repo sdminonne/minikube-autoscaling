@@ -1,39 +1,37 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: red-non-serving
+  name: blue-non-serving
   labels:
-     color: red
+     color: blue-non-serving
 spec:
   replicas: 2
   selector:
     matchLabels:
-      color: red
+      color: blue-non-serving
   template:
     metadata:
       labels:
-        color: red
+        color: blue-non-serving
     spec:
-      topologySpreadConstraints:
-        - maxSkew: 1
-          topologyKey: topology.kubernetes.io/zone
-          whenUnsatisfiable: DoNotSchedule
-          labelSelector:
-            matchExpressions:
-            - key: color
-              operator: In
-              values:
-              - "red"
       affinity:
+        nodeAffinity:
+           requiredDuringSchedulingIgnoredDuringExecution:
+             nodeSelectorTerms:
+             - matchExpressions:
+               - key: hypershift.operator.io/serving-component
+                 operator: NotIn
+                 values:
+                   - "true"
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
           - labelSelector:
               matchExpressions:
-              - key: hypershift.operator.io/serving-component
+              - key: color
                 operator: In
                 values:
-                - "true"
-            topologyKey: kubernetes.io/hostname
+                - blue-non-serving
+            topologyKey: topology.kubernetes.io/zone
       containers:
       - name: nginx
         image: nginx
